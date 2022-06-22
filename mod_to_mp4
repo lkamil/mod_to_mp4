@@ -1,0 +1,44 @@
+#!/bin/bash
+
+dir=$1
+
+# check if argument was passed in
+if [ -z "$dir" ]; then 
+    echo "[!] argument missing"  
+    echo "usage: mod_to_mp4 [directory]"
+    echo "requirements: ffmpeg"
+    exit
+fi
+
+# check if given directory contains any .MOD files
+count=`ls -1 $dir/*.MOD 2>/dev/null | wc -l`
+if [ $count == 0 ]
+then 
+    echo "[!] couldn't find any MOD files"
+    echo "usage: mod_to_mp4 [directory]"
+    echo "requirements: ffmpeg"
+    exit
+fi 
+
+for filename in $dir/*.MOD; do 
+    # get file id
+    prefix="${dir}/MOV"
+    suffix=".MOD"
+    removed_prefix=${filename/#$prefix}
+    id=${removed_prefix/%$suffix}
+
+    echo "[*] converting ${id}.MOD...";
+
+    out="${id}.mp4"
+
+    # convert
+    ffmpeg -loglevel quiet -i $filename "${dir}/${out}"
+    echo "[✓] successfully converted to ${out}";
+done
+
+# move mod files to new directory
+MOD_dir="${1}/MOD_files"
+mkdir $MOD_dir
+mv ${dir}/*.MOD ${dir}/*.MOI ${dir}/*.PGI $MOD_dir
+
+echo "[!] finished :)";
